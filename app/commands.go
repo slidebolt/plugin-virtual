@@ -146,6 +146,10 @@ func (a *App) applyCommand(addr messenger.Address, cmd any) error {
 		return a.updateLock(entity, func(s *domain.Lock) { s.Locked = false })
 	case domain.ButtonPress:
 		return a.updateButton(entity, func(s *domain.Button) { s.Presses++ })
+	case domain.BinarySensorTurnOn:
+		return a.updateBinarySensor(entity, func(s *domain.BinarySensor) { s.On = true })
+	case domain.BinarySensorTurnOff:
+		return a.updateBinarySensor(entity, func(s *domain.BinarySensor) { s.On = false })
 	case domain.NumberSetValue:
 		return a.updateNumber(entity, func(s *domain.Number) { s.Value = c.Value })
 	case domain.SelectOption:
@@ -215,6 +219,16 @@ func (a *App) updateButton(entity domain.Entity, mutate func(*domain.Button)) er
 	state, ok := entity.State.(domain.Button)
 	if !ok {
 		return fmt.Errorf("state type %T, want domain.Button", entity.State)
+	}
+	mutate(&state)
+	entity.State = state
+	return a.store.Save(entity)
+}
+
+func (a *App) updateBinarySensor(entity domain.Entity, mutate func(*domain.BinarySensor)) error {
+	state, ok := entity.State.(domain.BinarySensor)
+	if !ok {
+		return fmt.Errorf("state type %T, want domain.BinarySensor", entity.State)
 	}
 	mutate(&state)
 	entity.State = state

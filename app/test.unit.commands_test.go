@@ -14,10 +14,10 @@ func TestHandleCommand_MutatesCoreEntityState(t *testing.T) {
 	app.store = store
 
 	tests := []struct {
-		name     string
-		entity   domain.Entity
-		cmd      any
-		assert   func(t *testing.T, got domain.Entity)
+		name   string
+		entity domain.Entity
+		cmd    any
+		assert func(t *testing.T, got domain.Entity)
 	}{
 		{
 			name: "light set rgbw",
@@ -75,6 +75,34 @@ func TestHandleCommand_MutatesCoreEntityState(t *testing.T) {
 				btn := got.State.(domain.Button)
 				if btn.Presses != 3 {
 					t.Fatalf("button state = %+v", btn)
+				}
+			},
+		},
+		{
+			name: "binary sensor turn on",
+			entity: domain.Entity{
+				ID: "bin1", Plugin: PluginID, DeviceID: "dev1", Type: "binary_sensor",
+				State: domain.BinarySensor{On: false, DeviceClass: "occupancy"},
+			},
+			cmd: domain.BinarySensorTurnOn{},
+			assert: func(t *testing.T, got domain.Entity) {
+				sensor := got.State.(domain.BinarySensor)
+				if !sensor.On || sensor.DeviceClass != "occupancy" {
+					t.Fatalf("binary sensor state = %+v", sensor)
+				}
+			},
+		},
+		{
+			name: "binary sensor turn off",
+			entity: domain.Entity{
+				ID: "bin2", Plugin: PluginID, DeviceID: "dev1", Type: "binary_sensor",
+				State: domain.BinarySensor{On: true},
+			},
+			cmd: domain.BinarySensorTurnOff{},
+			assert: func(t *testing.T, got domain.Entity) {
+				sensor := got.State.(domain.BinarySensor)
+				if sensor.On {
+					t.Fatalf("binary sensor state = %+v", sensor)
 				}
 			},
 		},

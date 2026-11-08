@@ -36,3 +36,6 @@ bin/
 /plugin-clean
 /sb-plugin-clean
 !.env.example
+
+# Built binary
+/plugin-virtual
